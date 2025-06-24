@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Climate Disasters</title>
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://unpkg.com/globe.gl"></script>
+</head>
+
+<body>
+
+    <header>
+        <h1>CLIMATE<br />DISASTERS</h1>
+    </header>
+    <br><br>
+    <div class="frame">
+        <div id="globe-container"></div>
+    </div>
+
+    <script>
+        const globeContainer = document.getElementById('globe-container');
+
+ 
+        const selectedCoords = [
+            { lat: 55.7558, lng: 37.6173 },     // Москва
+            { lat: 48.8566, lng: 2.3522 },      // Париж
+            { lat: 40.7128, lng: -74.0060 },    // Нью-Йорк
+            { lat: 35.6895, lng: 139.6917 }     // Токио
+        ];
+        fetch('/world_polygons_only.geojson')
+            .then(res => res.json())
+            .then(countries => {
+                const world = Globe()(globeContainer)
+                    .globeImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg')
+                    .hexPolygonsData(countries.features)
+                    .hexPolygonResolution(3)
+                    .hexPolygonMargin(0.3)
+                    .hexPolygonUseDots(true)
+                    .hexPolygonColor(d => {
+                        const coords = d.geometry.coordinates[0];
+                        const avgLat = coords.reduce((sum, c) => sum + c[1], 0) / coords.length;
+                        const avgLng = coords.reduce((sum, c) => sum + c[0], 0) / coords.length;
+
+                        const isSelected = selectedCoords.some(coord =>
+                            Math.abs(coord.lat - avgLat) < 1 &&
+                            Math.abs(coord.lng - avgLng) < 1
+                        );
+
+                        return isSelected ? 'red' : '#444';
+                    });
+
+
+
+                    
+
+                // Access three.js if needed:
+                const scene = world.scene();
+                const camera = world.camera();
+                const renderer = world.renderer();
+
+                // 📌 Пример добавления точки
+                // selectedCoords.push({ lat: 40.7, lng: -74.0 }); // Нью-Йорк
+                // world.hexPolygonsData(countries.features); // обновить карту
+            });
+    </script>
+
+</body>
+
+</html>
