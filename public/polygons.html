@@ -69,7 +69,7 @@
             .then(res => res.json())
             .then(countries => {
                 const world = Globe()(globeContainer)
-                    .globeImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg')
+                    .globeImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg')
                     .hexPolygonsData(countries.features)
                     .hexPolygonResolution(3)
                     .hexPolygonMargin(0.3)
@@ -78,7 +78,7 @@
                     .labelLat(d => d.lat)
                     .labelLng(d => d.lng)
                     .labelText(() => '')
-                    .labelDotRadius(0.4)
+                    .labelDotRadius(0.8)
                     .labelColor(() => 'red')
                     .labelsData(disasterLocations);
             })
