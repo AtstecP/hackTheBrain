@@ -1,228 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Climate Disasters</title>
+    <meta charset="UTF-8">
+    <title>Climate Disasters</title>
     <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-  <header>
-    <nav>
-      <button id="toggleTexture">Switch View</button>
-    </nav>
-    <h1>CLIMATE<br />DISASTERS</h1>
-  </header>
+    <header>
+        <nav>
+            <button id="toggleTexture">Switch View</button>
+        </nav>
+        <h1>CLIMATE<br />DISASTERS</h1>
+    </header>
 
-  <div id="globe-container"></div>
-  <div id="disaster-labels"></div>
+    <div id="globe-container"></div>
+    <div id="disaster-labels"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-  
-  <script>
-    let camera, scene, renderer, controls, globe, atmosphere, spaceSphere;
-    let dayTexture, nightTexture, bumpTexture, spaceTexture;
-    const disasters = [
-      { lat: 38, lng: -120, name: "California Wildfires", year: 2022 },
-      { lat: 10, lng: -70, name: "Venezuela Floods", year: 2021 },
-      { lat: 15, lng: 20, name: "Sahel Drought", year: 2023 },
-      { lat: -30, lng: 35, name: "South Africa Heatwave", year: 2022 },
-      { lat: 0, lng: -20, name: "Atlantic Hurricanes", year: 2023 }
-    ];
-    const disasterMarkers = [];
-    const disasterLabels = [];
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
 
-    init();
+    <script>
+        let camera, scene, renderer, controls, globe, atmosphere, spaceSphere;
+        let dayTexture, nightTexture, bumpTexture, spaceTexture;
+        const disasters = [
+            { lat: 38, lng: -120, name: "California Wildfires", year: 2022 },
+            { lat: 10, lng: -70, name: "Venezuela Floods", year: 2021 },
+            { lat: 15, lng: 20, name: "Sahel Drought", year: 2023 },
+            { lat: -30, lng: 35, name: "South Africa Heatwave", year: 2022 },
+            { lat: 0, lng: -20, name: "Atlantic Hurricanes", year: 2023 }
+        ];
+        const disasterMarkers = [];
+        const disasterLabels = [];
 
-    function init() {
-      // Camera
-      camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(4.5, 2, 3);
+        init();
 
-      // Scene
-      scene = new THREE.Scene();
+        function init() {
+            // Camera
+            camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(4.5, 2, 3);
 
-      // Lighting
-      const sun = new THREE.DirectionalLight(0xffffff, 2);
-      sun.position.set(0, 0, 3);
-      scene.add(sun);
+            // Scene
+            scene = new THREE.Scene();
 
-      const ambient = new THREE.AmbientLight(0x404040);
-      scene.add(ambient);
+            // Lighting
+            const sun = new THREE.DirectionalLight(0xffffff, 2);
+            sun.position.set(0, 0, 3);
+            scene.add(sun);
 
-      // Textures
-      const textureLoader = new THREE.TextureLoader();
-      
-      // Load Earth textures
-      dayTexture = textureLoader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg');
-      nightTexture = textureLoader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg');
-      bumpTexture = textureLoader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png');
-      
-      // Load space texture 
-      spaceTexture = textureLoader.load('8k_stars.jpg', function(texture) {
-        createSpaceBackground(texture);
-        createEarth();
-        createDisasterMarkers();
-      });
+            const ambient = new THREE.AmbientLight(0x404040);
+            scene.add(ambient);
 
-      // Renderer
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.getElementById('globe-container').appendChild(renderer.domElement);
+            // Textures
+            const textureLoader = new THREE.TextureLoader();
 
-      // Controls
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.minDistance = 1.5;
-      controls.maxDistance = 10;
+            // Load Earth textures
+            dayTexture = textureLoader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg');
+            nightTexture = textureLoader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg');
+            bumpTexture = textureLoader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png');
 
-      // Event listeners
-      window.addEventListener('resize', onWindowResize);
-      document.getElementById('toggleTexture').addEventListener('click', toggleTexture);
+            // Load space texture 
+            spaceTexture = textureLoader.load('8k_stars.jpg', function (texture) {
+                createSpaceBackground(texture);
+                createEarth();
+                createDisasterMarkers();
+            });
 
-      // Start animation
-      animate();
-    }
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('globe-container').appendChild(renderer.domElement);
 
-    function createSpaceBackground(texture) {
-      // Create a large sphere with space texture
-      const geometry = new THREE.SphereGeometry(1000, 60, 60);
-      const material = new THREE.MeshBasicMaterial({
-        map: texture,
-        side: THREE.BackSide
-      });
-      spaceSphere = new THREE.Mesh(geometry, material);
-      scene.add(spaceSphere);
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.minDistance = 1.5;
+            controls.maxDistance = 10;
+
+            // Event listeners
+            window.addEventListener('resize', onWindowResize);
+            document.getElementById('toggleTexture').addEventListener('click', toggleTexture);
+
+            // Start animation
+            animate();
+        }
+
+        function createSpaceBackground(texture) {
+            // Create a large sphere with space texture
+            const geometry = new THREE.SphereGeometry(1000, 60, 60);
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide
+            });
+            spaceSphere = new THREE.Mesh(geometry, material);
+            scene.add(spaceSphere);
 
 
-    }
+        }
 
-    function createEarth() {
-      // Globe material
-      const globeMaterial = new THREE.MeshStandardMaterial({
-        map: dayTexture,
-        bumpMap: bumpTexture,
-        bumpScale: 0.05,
-        metalness: 0.1,
-        roughness: 0.7
-      });
+        function createEarth() {
+            // Globe material
+            const globeMaterial = new THREE.MeshStandardMaterial({
+                map: dayTexture,
+                bumpMap: bumpTexture,
+                bumpScale: 0.05,
+                metalness: 0.1,
+                roughness: 0.7
+            });
 
-      // Globe mesh
-      const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
-      globe = new THREE.Mesh(sphereGeometry, globeMaterial);
-      scene.add(globe);
+            // Globe mesh
+            const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
+            globe = new THREE.Mesh(sphereGeometry, globeMaterial);
+            scene.add(globe);
 
-      // Atmosphere
-    //   const atmosphereMaterial = new THREE.MeshBasicMaterial({
-    //     color: 0x4db2ff,
-    //     transparent: true,
-    //     opacity: 0.3,
-    //     side: THREE.BackSide
-    //   });
-    //   atmosphere = new THREE.Mesh(sphereGeometry, atmosphereMaterial);
-    //   atmosphere.scale.setScalar(1.04);
-    //   scene.add(atmosphere);
-  
-    }
+            // Atmosphere
+            //   const atmosphereMaterial = new THREE.MeshBasicMaterial({
+            //     color: 0x4db2ff,
+            //     transparent: true,
+            //     opacity: 0.3,
+            //     side: THREE.BackSide
+            //   });
+            //   atmosphere = new THREE.Mesh(sphereGeometry, atmosphereMaterial);
+            //   atmosphere.scale.setScalar(1.04);
+            //   scene.add(atmosphere);
 
-    function createDisasterMarkers() {
-      const labelContainer = document.getElementById('disaster-labels');
-      
-      disasters.forEach(disaster => {
-        // Create 3D marker
-        const markerGeometry = new THREE.SphereGeometry(0.03, 16, 16);
-        const markerMaterial = new THREE.MeshBasicMaterial({ 
-          color: 0xff0000,
-          transparent: true,
-          opacity: 0.8
-        });
-        const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-        
-        // Convert lat/lng to position on sphere
-        updateMarkerPosition(marker, disaster.lat, disaster.lng);
-        
-        scene.add(marker);
-        disasterMarkers.push({ marker, disaster });
+        }
 
-        // Create HTML label
-        const label = document.createElement('div');
-        label.className = 'disaster-label';
-        label.textContent = `${disaster.name} (${disaster.year})`;
-        labelContainer.appendChild(label);
-        disasterLabels.push({ label, disaster });
-      });
-    }
+        function createDisasterMarkers() {
+            const labelContainer = document.getElementById('disaster-labels');
 
-    function updateMarkerPosition(marker, lat, lng) {
-      const phi = (90 - lat) * (Math.PI / 180);
-      const theta = (lng + 180) * (Math.PI / 180);
-      const radius = 1.02;
-      
-      marker.position.set(
-        -Math.sin(phi) * Math.cos(theta) * radius,
-        Math.cos(phi) * radius,
-        Math.sin(phi) * Math.sin(theta) * radius
-      );
-      
-    }
+            disasters.forEach(disaster => {
+                // Create 3D marker
+                const markerGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+                const markerMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xff0000,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const marker = new THREE.Mesh(markerGeometry, markerMaterial);
 
-    function toggleTexture() {
-      if (globe.material.map === dayTexture) {
-        globe.material.map = nightTexture;
-        if (atmosphere) atmosphere.material.opacity = 0.6;
-      } else {
-        globe.material.map = dayTexture;
-        if (atmosphere) atmosphere.material.opacity = 0.3;
-      }
-      globe.material.needsUpdate = true;
-    }
+                // Convert lat/lng to position on sphere
+                updateMarkerPosition(marker, disaster.lat, disaster.lng);
 
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+                scene.add(marker);
+                disasterMarkers.push({ marker, disaster });
 
-    function updateLabels() {
-      const vector = new THREE.Vector3();
-      
-      disasterLabels.forEach(({ label, disaster }, index) => {
-        const marker = disasterMarkers[index]?.marker;
-        if (!marker) return;
+                // Create HTML label
+                const label = document.createElement('div');
+                label.className = 'disaster-label';
+                label.textContent = `${disaster.name} (${disaster.year})`;
+                labelContainer.appendChild(label);
+                disasterLabels.push({ label, disaster });
+            });
+        }
 
-        // Convert 3D position to 2D screen position
-        vector.setFromMatrixPosition(marker.matrixWorld);
-        vector.project(camera);
+        function updateMarkerPosition(marker, lat, lng) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lng + 180) * (Math.PI / 180);
+            const radius = 1.02;
 
-        // Update label position
-        const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-        const y = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
-        
-        label.style.transform = `translate(${x}px, ${y}px)`;
-        label.style.display = vector.z > 1 ? 'none' : 'block';
-      });
-    }
+            marker.position.set(
+                -Math.sin(phi) * Math.cos(theta) * radius,
+                Math.cos(phi) * radius,
+                Math.sin(phi) * Math.sin(theta) * radius
+            );
 
-    function animate() {
-      requestAnimationFrame(animate);
-      
-      // Rotate Earth slowly
-      //if (globe) globe.rotation.y += 0.001;
-      
-      // Update space background to follow camera
-      if (spaceSphere) {
-        spaceSphere.position.copy(camera.position);
-      }
-      
-      // Update controls
-      controls.update();
-      
-      // Update disaster labels
-      updateLabels();
-      
-      renderer.render(scene, camera);
-    }
-  </script>
+        }
+
+        function toggleTexture() {
+            if (globe.material.map === dayTexture) {
+                globe.material.map = nightTexture;
+                if (atmosphere) atmosphere.material.opacity = 0.6;
+            } else {
+                globe.material.map = dayTexture;
+                if (atmosphere) atmosphere.material.opacity = 0.3;
+            }
+            globe.material.needsUpdate = true;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function updateLabels() {
+            const vector = new THREE.Vector3();
+
+            disasterLabels.forEach(({ label, disaster }, index) => {
+                const marker = disasterMarkers[index]?.marker;
+                if (!marker) return;
+
+                // Convert 3D position to 2D screen position
+                vector.setFromMatrixPosition(marker.matrixWorld);
+                vector.project(camera);
+
+                // Update label position
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
+
+                label.style.transform = `translate(${x}px, ${y}px)`;
+                label.style.display = vector.z > 1 ? 'none' : 'block';
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate Earth slowly
+            //if (globe) globe.rotation.y += 0.001;
+
+            // Update space background to follow camera
+            if (spaceSphere) {
+                spaceSphere.position.copy(camera.position);
+            }
+
+            // Update controls
+            controls.update();
+
+            // Update disaster labels
+            updateLabels();
+
+            renderer.render(scene, camera);
+        }
+    </script>
 </body>
+
 </html>

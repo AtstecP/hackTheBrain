@@ -59,10 +59,20 @@
         const globeContainer = document.getElementById('globe-container');
 
         const disasterLocations = [
-            { lat: 55.7558, lng: 37.6173, name: "Москва" },
-            { lat: 48.8566, lng: 2.3522, name: "Париж" },
-            { lat: 40.7128, lng: -74.0060, name: "Нью-Йорк" },
-            { lat: 35.6895, lng: 139.6917, name: "Токио" }
+           {'date': '2025-06-23T00:00:00', 'event_type': 'Wildfire', 'color': '#CC0000', 'severity': 'Orange', 'magnitude': 0, 'lat': 38.39269824938304, 'lng': 26.115319732348684} ,
+{'date': '2025-06-22T00:00:00', 'event_type': 'Drought', 'color': '#9933FF', 'severity': 'Orange', 'magnitude': 0, 'lat': -12.854, 'lng': -48.14} ,
+{'date': '2025-06-22T00:00:00', 'event_type': 'Drought', 'color': '#9933FF', 'severity': 'Orange', 'magnitude': 0, 'lat': 33.831, 'lng': -3.189} ,
+{'date': '2025-06-22T00:00:00', 'event_type': 'Drought', 'color': '#9933FF', 'severity': 'Orange', 'magnitude': 0, 'lat': -15.965, 'lng': 47.743} ,
+{'date': '2025-06-22T00:00:00', 'event_type': 'Drought', 'color': '#9933FF', 'severity': 'Orange', 'magnitude': 0, 'lat': 29.325, 'lng': -101.493} ,
+{'date': '2025-06-22T00:00:00', 'event_type': 'Drought', 'color': '#9933FF', 'severity': 'Orange', 'magnitude': 0, 'lat': 48.557, 'lng': 36.38} ,
+{'date': '2025-06-22T00:00:00', 'event_type': 'Drought', 'color': '#9933FF', 'severity': 'Orange', 'magnitude': 0, 'lat': 35.373, 'lng': 48.189} ,
+{'date': '2025-06-20T03:00:00', 'event_type': 'Tropical Cyclone', 'color': '#00CCCC', 'severity': 'Red', 'magnitude': 0, 'lat': 18.0, 'lng': -100.8} ,
+{'date': '2025-06-18T12:00:00', 'event_type': 'Flood', 'color': '#3366FF', 'severity': 'Orange', 'magnitude': 0, 'lat': -0.7860696, 'lng': 18.029460944233} ,
+{'date': '2025-06-17T09:45:00', 'event_type': 'Volcano', 'color': '#FF9933', 'severity': 'Orange', 'magnitude': 0, 'lat': -8.542, 'lng': 122.775} ,
+{'date': '2025-06-14T06:00:00', 'event_type': 'Tropical Cyclone', 'color': '#00CCCC', 'severity': 'Orange', 'magnitude': 0, 'lat': 21.2, 'lng': 109.8} ,
+{'date': '2025-06-14T01:00:00', 'event_type': 'Flood', 'color': '#3366FF', 'severity': 'Orange', 'magnitude': 0, 'lat': -31.589075, 'lng': 28.789145} ,
+{'date': '2025-06-08T13:08:06', 'event_type': 'Earthquake', 'color': '#FF3333', 'severity': 'Orange', 'magnitude': 0, 'lat': 4.5125, 'lng': -73.1444} ,
+{'date': '2025-05-30T01:00:00', 'event_type': 'Flood', 'color': '#3366FF', 'severity': 'Orange', 'magnitude': 0, 'lat': 9.2957202, 'lng': 5.0544281} ,
         ];
 
         fetch('ne_110m_admin_0_countries.geojson')
@@ -77,9 +87,10 @@
                     .hexPolygonColor(() => '#444')
                     .labelLat(d => d.lat)
                     .labelLng(d => d.lng)
-                    .labelText(() => '')
+                    .labelText((d) => d.event_type)
+                    .labelSize(3)
                     .labelDotRadius(0.8)
-                    .labelColor(() => 'red')
+                    .labelColor((d) => d.color)
                     .labelsData(disasterLocations);
             })
             .catch(err => console.error("Ошибка загрузки GeoJSON:", err));
